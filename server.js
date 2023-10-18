@@ -3,7 +3,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const consoleTable = require("console.table");
 
-
+//Setting up connection to the database
 const db = mysql.createConnection(
     {
         host: "localhost",
@@ -13,7 +13,7 @@ const db = mysql.createConnection(
     },
     console.log(`Connected to the employees_db database.`)
 );
-
+//Ensure a connection is made to the database
 db.connect(function (err) {
     if (err) throw err;
     console.log("*************************************");
@@ -22,7 +22,7 @@ db.connect(function (err) {
     startingQuestion();
 });
 
-
+//Initial prompt asking user what they want to do
 function startingQuestion() {
     inquirer.prompt([
         {
@@ -41,6 +41,7 @@ function startingQuestion() {
             ]
         }
     ]).then((answer) => {
+        //switch case to handle user's choice
         switch(answer.intro) {
             case 'View All Employees':
                 viewEmployees();
@@ -71,8 +72,9 @@ function startingQuestion() {
     });
 };
 
-//Viewing
+//Function to view all departments
 function viewDepartments() {
+    //SQL query to fetch department data
     const sql = `SELECT department.id, department.name AS Department FROM department;`
     db.query(sql, (err, res) => {
         if (err) {
@@ -83,8 +85,9 @@ function viewDepartments() {
         startingQuestion();
     });
 };
-
+//Function to view all roles
 function viewRoles() {
+    //SQL query to fetch role data joined with department
     const sql = `SELECT role.id, role.title AS role, role.salary, department.name AS department FROM role INNER JOIN department ON (department.id = role.department_id);`;
     db.query(sql, (err, res) => {
         if (err) {
@@ -95,8 +98,9 @@ function viewRoles() {
         startingQuestion();
     });
 };
-
+//Function to view all employees
 function viewEmployees() {
+    //SQL query to fetch employee data joined with role and department
     const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title AS role, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN employee manager on manager.id = employee.manager_id INNER JOIN role ON (role.id = employee.role_id) INNER JOIN department ON (department.id = role.department_id) ORDER BY employee.id;`
     db.query(sql, (err, res) => {
         if (err) {
@@ -108,8 +112,9 @@ function viewEmployees() {
     });
 };
 
-// Adding
+//Function to add a new department
 function addDepartment() {
+    //prompting user to get department details
     inquirer.prompt([
         {
             type: 'input',
@@ -128,8 +133,9 @@ function addDepartment() {
         });
     });
 };
-
+//Function to add a new role
 function addRole() {
+    //Fetching department list to display in the prompt
     const sql2 = `SELECT * FROM department`;
     db.query(sql2, (error, response) => {
         departmentList = response.map(departments => ({
@@ -166,8 +172,9 @@ function addRole() {
         });
     });
 };
-//Adding
+//Function to add a new employee
 function addEmployee() {
+    //Fetching employee and role list to display in the prompt
     const sql2 = `SELECT * FROM employee`;
     db.query(sql2, (error, response) => {
         employeeList = response.map(employees => ({
@@ -218,8 +225,9 @@ function addEmployee() {
         });
     });
 };
-//Updating
+//Function to update an employee's role
 function updateRole() {
+    //Fetching employee and role list to display in the prompt
     const sql2 = `SELECT * FROM employee`;
     db.query(sql2, (error, response) => {
         employeeList = response.map(employees => ({
